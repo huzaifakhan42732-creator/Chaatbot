@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather & Query App</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <h2>🌦 Weather Checker</h2>
+  <input type="text" id="cityName" placeholder="Enter city name">
+  <button onclick="getWeather()">Get Weather</button>
+  <div id="weatherResult"></div>
+
+  <hr>
+
+  <h2>🤖 Ask Gemini</h2>
+  <input type="text" id="query" placeholder="Ask something">
+  <button onclick="getQueryAnswer()">Get Answer</button>
+  <div id="queryResult"></div>
+
+  <script>
+    async function getWeather() {
+      try {  
+        const divRef = document.querySelector("#weatherResult");
+        const cityInputRef = document.querySelector("#cityName");
+        const cityName = cityInputRef.value.trim();
+
+        if (!cityName) {
+          alert("Please enter a city name");
+          return;
+        }
+
+        const res = await axios.get(
+          `https://p2pclouds.up.railway.app/v1/learn/weather?city=${cityName}`
+        );
+
+        divRef.innerHTML = `Feels like: ${res.data.current.feelslike_c} °C`;
+      } catch (err) {
+        console.error(err);
+        alert("Something went wrong, check your internet connection");
+      }
+    }
+
+    async function getQueryAnswer() {
+      try {
+        const divRef = document.querySelector("#queryResult");
+        const queryInputRef = document.querySelector("#query");
+        const query = queryInputRef.value.trim();
+
+        if (!query) {
+          alert("Please enter a query");
+          return;
+        }
+
+        const res = await axios.post(
+          "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=YOUR_API_KEY",
+          {
+            contents: [
+              {
+                parts: [{ text: query }]
+              }
+            ]
+          },
+          {
+            headers: {
+              "X-goog-api-key" :"AIzaSyDv65vB6olKVlp5ZIDRy9iI84oSfxQzurw",
+              "Content-Type" : "application/json",
+            }
+          }
+        );
+
+        console.log(res.data); // 👈 see full response in console
+
+        const answer = res.data.candidates?.[0]?.content?.parts?.[0]?.text || "No response";
+        divRef.innerHTML = answer;
+
+      } catch (err) {
+        
+        alert("Something went wrong");
+      }
+    }
+  </script>
+</body>
+</html>
